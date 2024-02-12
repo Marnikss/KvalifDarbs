@@ -1,0 +1,2 @@
+# KvalifDarbs
+Mana veidotā spēle
