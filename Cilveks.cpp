@@ -4,7 +4,8 @@
 #include "Cilveks.h"
 #include "Speele.h"
 #include "UserInterface/CilvekaHUD.h"
-
+#include "Components/InventoryComponent.h"
+#include "World/Pickup.h"
 
 
 //engine
@@ -17,31 +18,6 @@
 ACilveks::ACilveks()
 {
     PrimaryActorTick.bCanEverTick = true;
-
-    // SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComponent"));
-    // if (SpringArmComponent)
-    // {
-    //     SpringArmComponent->SetupAttachment(RootComponent);
-    //     SpringArmComponent->TargetArmLength = 300.0f;
-    // }
-    // else
-    // {
-    //     UE_LOG(LogTemp, Error, TEXT("SpringArmComponent not created"));
-    // }
-
-    // CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
-    // if (CameraComponent)
-    // {
-    //     CameraComponent->SetupAttachment(SpringArmComponent);
-    // }
-    // else
-    // {
-    //     UE_LOG(LogTemp, Error, TEXT("CameraComponent not created"));
-    // }
-
-    // GetCharacterMovement()->bOrientRotationToMovement = true;
-    // GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
-    // // 540.0f
     
 
     GetCharacterMovement()->JumpZVelocity = 800.0f;
@@ -50,6 +26,10 @@ ACilveks::ACilveks()
 
     InteractionCheckFrequency = 0.1;
     InteractionCheckDistance = 225.0f;
+
+    PlayerInventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("PlayerINventory"));
+    PlayerInventory->SetSlotsCapacity(20);
+    PlayerInventory->SetWeightCapacity(50.0f);
 }
 
 void ACilveks::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -60,6 +40,8 @@ void ACilveks::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
     PlayerInputComponent->BindAxis("MoveRight", this, &ACilveks::MoveRight);
     PlayerInputComponent->BindAxis("Turn", this, &ACilveks::Turn);
     PlayerInputComponent->BindAxis("LookUp", this, &ACilveks::LookUp);
+
+    PlayerInputComponent->BindAction("ToggleMenu", IE_Pressed, this, &ACilveks::ToggleMenu);
 
     PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACilveks::StartJump);
     PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACilveks::StopJump);
@@ -187,6 +169,11 @@ void ACilveks::BeginPlay()
     Super::BeginPlay();
 
     HUD = Cast<ACilvekaHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+
+    APlayerCameraManager* const camMan = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
+    camMan->ViewPitchMin = -70.f;
+    camMan->ViewPitchMax = 20.f;
+
 }
 
 void ACilveks::Tick(float DeltaSeconds)
@@ -210,7 +197,7 @@ void ACilveks::PerformInteractionCheck()
 
     if (LookDirection > 0)
     {
-        DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 1.0f, 0, 2.0f);
+        //DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 1.0f, 0, 2.0f);
 
         FCollisionQueryParams QueryParams;
         QueryParams.AddIgnoredActor(this);
@@ -327,3 +314,36 @@ void ACilveks::Interact()
     }
 }
 
+void ACilveks::UpdateInteractionWidget() const
+{
+    if (IsValid(TargetInteractable.GetObject()))
+    {
+        HUD->UpdateInteractionWidget(&TargetInteractable->InteractableData);
+    }
+}
+
+void ACilveks::DropItem(UItemBase* ItemToDrop, const int32 QuantityToDrop)
+{
+    if (PlayerInventory->FindMatchingItem(ItemToDrop))
+    {
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.Owner = this;
+        SpawnParams.bNoFail = true;
+        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+        const FVector SpawnLocation{ GetActorLocation() + (GetActorForwardVector() * 50.0f) };
+
+        const FTransform SpawnTransform(GetActorRotation(), SpawnLocation);
+
+        const int32 RemovedQuantity = PlayerInventory->RemoveAmountOfItem(ItemToDrop, QuantityToDrop);
+
+        APickup* Pickup = GetWorld()->SpawnActor<APickup>(APickup::StaticClass(), SpawnTransform, SpawnParams);
+
+        Pickup->InitializeDrop(ItemToDrop, RemovedQuantity);
+    }
+}
+
+void ACilveks::ToggleMenu()
+{
+    HUD->ToggleMenu();
+}

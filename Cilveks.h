@@ -5,9 +5,12 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include <Components/InventoryComponent.h>
 #include "Cilveks.generated.h"
 
 class ACilvekaHUD;
+class UInventoryComponent;
+class UItemBase;
 
 USTRUCT()
 struct FInteractionData
@@ -37,7 +40,12 @@ class SPEELE_API ACilveks : public ACharacter
     FORCEINLINE bool IsInteracting() const {
         return GetWorldTimerManager().IsTimerActive(TimerHandle_Interaction);
     }
+
+    FORCEINLINE UInventoryComponent* GetInventory() const { return PlayerInventory; };
+
+    void UpdateInteractionWidget() const;
     
+    void DropItem(UItemBase* ItemToDrop, const int32 QuantityToDrop);
 
  protected:
     //===================================================
@@ -54,6 +62,9 @@ class SPEELE_API ACilveks : public ACharacter
     
     UPROPERTY(VisibleAnywhere, Category = "Character | Interaction")
     TScriptInterface<IInteractionInterface> TargetInteractable;
+
+    UPROPERTY(VisibleAnywhere, Category = "Character | Inventory ")
+    UInventoryComponent* PlayerInventory;
 
     float InteractionCheckFrequency;
 
@@ -77,6 +88,8 @@ class SPEELE_API ACilveks : public ACharacter
     //===================================================
     // FUNCTIONS
     //===================================================
+
+    void ToggleMenu();
 
     void PerformInteractionCheck();
     void FoundInteractable(AActor* NewInteractable);
