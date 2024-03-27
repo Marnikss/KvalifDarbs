@@ -3,6 +3,7 @@
 
 #include "UserInterface/MainMenu.h"
 #include "Speele/Cilveks.h"
+#include "UserInterface/Inventory/ItemDragDropOperation.h"
 
 
 void UMainMenu::NativeOnInitialized()
@@ -19,7 +20,13 @@ void UMainMenu::NativeConstruct()
 
 bool UMainMenu::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
-	return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
 
-	// cast operation to item drag drop, ensure player is valid, call drop item on player
+	const UItemDragDropOperation* ItemDragDrop = Cast<UItemDragDropOperation>(InOperation);
+
+	if (PlayerCharacter && ItemDragDrop->SourceItem)
+	{
+		PlayerCharacter->DropItem(ItemDragDrop->SourceItem, ItemDragDrop->SourceItem->Quantity);
+		return true;
+	}
+	return false;
 }

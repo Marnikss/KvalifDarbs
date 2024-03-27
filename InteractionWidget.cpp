@@ -23,14 +23,14 @@ void UInteractionWidget::NativeConstruct()
 }
 
 
-void UInteractionWidget::UpdateWidget(const FInteractableData* InteractableData) const
+void UInteractionWidget::UpdateWidget(const FInteractableData* InteractableData)const
 {
 	switch (InteractableData->InteractableType)
 	{
-
 	case EInteractableType::Pickup:
 		KeyPressText->SetText(FText::FromString("Press"));
 		InteractionProgressBar->SetVisibility(ESlateVisibility::Collapsed);
+		
 
 		if (InteractableData->Quantity < 2)
 		{

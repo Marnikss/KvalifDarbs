@@ -9,6 +9,7 @@
 
 class UDataTable;
 class UItemBase;
+
 UCLASS()
 class SPEELE_API APickup : public AActor, public IInteractionInterface 
 {
@@ -30,7 +31,7 @@ public:
 
 	void InitializePickup(const TSubclassOf<UItemBase> BaseClass, const int32 InQuantity);
 
-	void InitializeDrop(UItemBase* ItemDrop, const int32 InQuantity);
+	void InitializeDrop(UItemBase* ItemToDrop, const int32 InQuantity);
 
 	FORCEINLINE UItemBase* GetItemData() { return ItemReference; };
 
@@ -66,6 +67,8 @@ protected:
 	// FUNCTIONS
 	//===================================================
 	virtual void BeginPlay() override;
+
+	
 
 	virtual void Interact(ACilveks* PlayerCharacter) override;
 

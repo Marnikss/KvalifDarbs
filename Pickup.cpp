@@ -2,11 +2,15 @@
 
 
 #include "World/Pickup.h"
+#include "Speele/Cilveks.h"
+#include "Components/InventoryComponent.h"
 #include "Items/ItemBase.h"
+
+
 
 APickup::APickup()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;//false
 
 	PickupMesh = CreateDefaultSubobject<UStaticMeshComponent>("PickupMesh");
 	PickupMesh->SetSimulatePhysics(true);
@@ -25,9 +29,34 @@ void APickup::BeginPlay()
 
 void APickup::InitializePickup(const TSubclassOf<UItemBase> BaseClass, const int32 InQuantity)
 {
-	if (ItemDataTable && DesiredItemID.IsNone())
+	if (ItemDataTable && !DesiredItemID.IsNone())// !
 	{
-		const FItemData* ItemData = ItemDataTable->FindRow<FItemData>(DesiredItemID ,DesiredItemID.ToString());
+		
+		const FItemData* ItemData = ItemDataTable->FindRow<FItemData>(DesiredItemID, DesiredItemID.ToString());
+		if (ItemData)
+		{
+			ItemReference = NewObject<UItemBase>(this, BaseClass);
+
+			ItemReference->ID = ItemData->ID;
+			ItemReference->ItemType = ItemData->ItemType;
+			ItemReference->ItemQuality = ItemData->ItemQuality;
+			ItemReference->NumericData = ItemData->NumericData;
+			ItemReference->TextData = ItemData->TextData;
+			ItemReference->AssetData = ItemData->AssetData;
+
+			InQuantity <= 0 ? ItemReference->SetQuantity(1) : ItemReference->SetQuantity(InQuantity);
+
+			PickupMesh->SetStaticMesh(ItemData->AssetData.Mesh);
+
+			UpdateInteractableData();
+		}
+		else
+		{
+			// Handle the case where ItemData is null
+			UE_LOG(LogTemp, Warning, TEXT("Failed to find ItemData for DesiredItemID: %s"), *DesiredItemID.ToString());
+		}
+		
+		/*const FItemData* ItemData = ItemDataTable->FindRow<FItemData>(DesiredItemID, DesiredItemID.ToString());
 
 		ItemReference = NewObject<UItemBase>(this, BaseClass);
 
@@ -42,7 +71,7 @@ void APickup::InitializePickup(const TSubclassOf<UItemBase> BaseClass, const int
 
 		PickupMesh->SetStaticMesh(ItemData->AssetData.Mesh);
 
-		UpdateInteractableData();
+		UpdateInteractableData(); */
 
 	}
 }
@@ -53,6 +82,7 @@ void APickup::InitializeDrop(UItemBase* ItemToDrop, const int32 InQuantity)
 	InQuantity <= 0 ? ItemReference->SetQuantity(1) : ItemReference->SetQuantity(InQuantity);
 	ItemReference->NumericData.Weight = ItemToDrop->GetItemSingleWeight();
 	PickupMesh->SetStaticMesh(ItemToDrop->AssetData.Mesh);
+	ItemReference->OwningInventory = nullptr;
 	UpdateInteractableData();
 }
 
@@ -68,7 +98,7 @@ void APickup::EndFocus()
 {
 	if (PickupMesh)
 	{
-		PickupMesh->SetRenderCustomDepth(true);
+		PickupMesh->SetRenderCustomDepth(false);
 	}
 }
 
@@ -96,11 +126,32 @@ void APickup::TakePickup(const ACilveks* Taker)
 	{
 		if (ItemReference)
 		{
-			//if (UInventoryComponent* PlayerInventory = Taker->Getinventory())
-			
-			// try to add item to player inventory
-			// based on result of the add operation
-			// adjust or destroy the pickup
+			if (UInventoryComponent* PlayerInventory = Taker->GetInventory())
+			{
+				const FItemAddResult AddResult = PlayerInventory->HandleAddItem(ItemReference);
+
+				switch (AddResult.OperationResult)
+				{
+				case EItemAddResult::IAR_NoItemAdded:
+					break;
+				case EItemAddResult::IAR_PartialAmountItemAdded:
+					UpdateInteractableData();
+					Taker->UpdateInteractionWidget();
+					break;
+				case EItemAddResult::IAR_AllItemAdded:
+					Destroy();
+					break;
+				}
+				UE_LOG(LogTemp, Warning, TEXT("%s"), *AddResult.ResultMessage.ToString());
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Player inventory component is null!"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Pickup internal item reference was null!"));
 		}
 	}
 }

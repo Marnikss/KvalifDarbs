@@ -10,6 +10,9 @@
 /**
  * 
  */
+
+class UInventoryComponent;
+
 UCLASS()
 class SPEELE_API UItemBase : public UObject
 {
@@ -21,8 +24,8 @@ class SPEELE_API UItemBase : public UObject
 	// PROPERTIES & VARIABLES
 	//===================================================
 
-	//UPROPERTY()
-	//UInventoryComponent* OwningInventory;
+	UPROPERTY()
+	UInventoryComponent* OwningInventory;
 
 	UPROPERTY(VisibleAnywhere, Category = "Item")
 	int32 Quantity;
@@ -48,11 +51,16 @@ class SPEELE_API UItemBase : public UObject
 	UPROPERTY(VisibleAnywhere, Category = "Item")
 	FItemAssetData AssetData;
 
+	bool bIsCopy;
+	bool bIsPickup;
+
 	//===================================================
 	// Functions  
 	//===================================================
 
 	UItemBase();
+
+	void ResetItemFlags();
 
 	UItemBase* CreateItemCopy();
 
