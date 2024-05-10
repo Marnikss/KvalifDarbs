@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -75,11 +73,27 @@ public:
 	// PROPERTIES & VARIABLES
 	//===================================================
 
+	bool HasItemWithID(const int32 ItemID) const;
+
+	
+
+	UPROPERTY(EditInstanceOnly, Category = "Inventory")
+	int32 InventorySlotsCapacity;
+
 	FOnInventoryUpdated OnInventoryUpdated;
+
+	UPROPERTY(EditInstanceOnly, Category = "Inventory")
+	TArray<TObjectPtr<UItemBase>> InventoryContents;
 
 	//===================================================
 	// FUNCTIONS
 	//===================================================
+
+	//TArray<UItemBase*>& GetInventoryItems() { return InventoryItems; }
+
+	void RemoveItemByID(int32 ItemID);
+
+	void AddNewItem(UItemBase* Item, const int32 AmountToAdd);
 
 	UInventoryComponent();
 
@@ -113,28 +127,28 @@ public:
 	FORCEINLINE int32 GetSlotsCapacity() const { return InventorySlotsCapacity;  };
 	UFUNCTION(Category = "Inventory")
 	FORCEINLINE TArray<UItemBase*> GetInventoryContents() const { return InventoryContents; };
-	// Setters
-	UFUNCTION(Category = "Inventory")
-	FORCEINLINE void SetSlotsCapacity(const int32 NewSlotsCapacity) { InventorySlotsCapacity = NewSlotsCapacity; };
+
+	FORCEINLINE void SetSlotsCapacity(const int32 NewSlotsCapacity);
+
 	UFUNCTION(Category = "Inventory")
 	FORCEINLINE void SetWeightCapacity(const float NewWeightCapacity) { InventoryWeightCapacity = NewWeightCapacity; };
 
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
+	TArray<UItemBase*> Inventory;
 protected:
 
 	//===================================================
 	// PROPERTIES & VARIABLES
 	//===================================================
 
+	TArray<UItemBase*> InventoryItems;
+
 	UPROPERTY(VisibleAnywhere, Category="Inventory")
 	float InventoryTotalWeight;
-	UPROPERTY(EditInstanceOnly, Category = "Inventory")
-	int32 InventorySlotsCapacity;
+	
 	UPROPERTY(EditInstanceOnly, Category = "Inventory")
 	float InventoryWeightCapacity;
-
-	UPROPERTY(EditInstanceOnly, Category = "Inventory")
-	TArray<TObjectPtr<UItemBase>> InventoryContents;
 
 	//===================================================
 	// FUNCTIONS
@@ -147,5 +161,8 @@ protected:
 	int32 CalculateWeightAddAmount(UItemBase* ItemIn, int32 RequestedAddAmount);
 	int32 CalculateNumberForFullStack(UItemBase* StackableItem, int32 InitialRequestedAddAmount);
 		
-	void AddNewItem(UItemBase* Item, const int32 AmountToAdd);
+	
+	
+
+	
 };

@@ -3,6 +3,8 @@
 
 #include "Items/ItemBase.h"
 #include "Components/InventoryComponent.h"
+#include "Engine/DataTable.h"
+#include <World/Pickup.h>
 
 UItemBase::UItemBase() : bIsCopy(false), bIsPickup(false)
 {
@@ -48,7 +50,7 @@ void UItemBase::SetQuantity(const int32 NewQuantity)
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("ItemBase OwningInventory was null"));
+			//UE_LOG(LogTemp, Error, TEXT("ItemBase OwningInventory was null"));
 		}
 	}
 }
@@ -57,3 +59,48 @@ void UItemBase::Use(ACharacter* CHaracter)
 {
 
 }
+
+bool UItemBase::IsAxe() const
+{
+	UE_LOG(LogTemp, Warning, TEXT("Item ID: %s"), *ID.ToString());
+	UE_LOG(LogTemp, Warning, TEXT("Item Type: %d"), static_cast<int32>(ItemType));
+
+	return ItemType == EItemType::Weapon;
+}
+
+
+float UItemBase::GetDamage() const
+{
+	if (IsAxe() && ItemStatistics.DamageValue > 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("DamageValue: %f"), ItemStatistics.DamageValue);
+		return ItemStatistics.DamageValue;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("DamageValue not initialized correctly or is not greater than 0"));
+	}
+
+	// Default value if damage value is not found or item is not an axe
+	return 0.0f;
+}
+
+
+void UItemBase::InitializeFromDataTable(FName DataTableRowName, UDataTable* DataTable)
+{
+	if (!DataTable) return;
+
+	FItemData* ItemData = DataTable->FindRow<FItemData>(DataTableRowName, "");
+	if (ItemData)
+	{
+		ItemStatistics = ItemData->ItemStatistics;
+	}
+}
+
+
+
+
+
+
+
+

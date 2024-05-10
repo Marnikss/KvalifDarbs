@@ -5,6 +5,9 @@
 #include <Interfaces/InteractionInterface.h>
 
 
+
+
+
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
 {
@@ -12,7 +15,7 @@ UInventoryComponent::UInventoryComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// ...
+	
 }
 
 
@@ -20,10 +23,10 @@ UInventoryComponent::UInventoryComponent()
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
+	// Log the number of items in the inventory after a delay of 1 second
 	
 }
+
 
 FItemAddResult UInventoryComponent::HandleAddItem(UItemBase* InputItem)
 {
@@ -133,6 +136,11 @@ void UInventoryComponent::SplitExistingStack(UItemBase* ItemIn, const int32 Amou
 	}
 }
 
+void UInventoryComponent::SetSlotsCapacity(const int32 NewSlotsCapacity)
+{
+	InventorySlotsCapacity = NewSlotsCapacity;
+}
+
 FItemAddResult UInventoryComponent::HandleNonStackableItems(UItemBase* InputItem)
 {
 
@@ -157,14 +165,11 @@ FItemAddResult UInventoryComponent::HandleNonStackableItems(UItemBase* InputItem
 		(FText::FromString("Could not add {0} to the inventory, All inventory slots are full."), InputItem->TextData.Name));
 	}
 	
-	AddNewItem(InputItem, 1);//1
+	AddNewItem(InputItem, 1); // 1
+	UE_LOG(LogTemp, Warning, TEXT("Item added. Inventory size: %d"), InventoryContents.Num());
 	return FItemAddResult::AddedAll(1, FText::Format //1
 	(FText::FromString("Successfully added a single {0} to the inventory. HANDLE NONSTACKABLE ITEMS DONE"), InputItem->TextData.Name));
 }
-
-
-
-
 
 
 int32 UInventoryComponent::HandleStackableItems(UItemBase* ItemIn, int32 RequestedAddAmount)
@@ -296,8 +301,44 @@ void UInventoryComponent::AddNewItem(UItemBase* Item, const int32 AmountToAdd)
 
 	InventoryContents.Add(NewItem);
 	InventoryTotalWeight += NewItem->GetItemStackWeight();
+	UE_LOG(LogTemp, Warning, TEXT("Item added. Inventory size: %d"), InventoryContents.Num());
+	UE_LOG(LogTemp, Warning, TEXT("Inventory Capacity: %d"), InventorySlotsCapacity); // Add this line to check inventory capacity
 	OnInventoryUpdated.Broadcast();
 }
 
 
+
+bool UInventoryComponent::HasItemWithID(const int32 ItemID) const
+{
+	FName ItemIDName = FName(*FString::FromInt(ItemID));
+	for (const auto& Item : InventoryContents)
+	{
+		if (Item && Item->ID.IsEqual(ItemIDName))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Item with ID %d found in inventory."), ItemID);
+			return true;
+		}
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Item with ID %d not found in inventory."), ItemID);
+	return false;
+}
+
+void UInventoryComponent::RemoveItemByID(int32 ItemID)
+{
+	// Convert the integer ItemID to FString
+	FString ItemIDString = FString::FromInt(ItemID);
+
+	for (int32 Index = 0; Index < InventoryContents.Num(); ++Index)
+	{
+		if (InventoryContents[Index] && InventoryContents[Index]->ID.ToString() == ItemIDString)
+		{
+			// Remove the item from the inventory
+			InventoryContents.RemoveAt(Index);
+			UE_LOG(LogTemp, Warning, TEXT("Item with ID %d removed from inventory"), ItemID);
+			return;
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Item with ID %d not found in inventory"), ItemID);
+}
 

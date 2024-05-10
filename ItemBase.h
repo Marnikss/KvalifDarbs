@@ -79,6 +79,14 @@ class SPEELE_API UItemBase : public UObject
 	UFUNCTION(Category = "Item")
 	virtual void Use(ACharacter* Character);
 
+	UFUNCTION(BlueprintCallable, Category = "Item")
+	bool IsAxe() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Item")
+	float GetDamage() const;
+
+	void InitializeFromDataTable(FName DataTableRowName, UDataTable* DataTable);
+
 	 
 protected:
 

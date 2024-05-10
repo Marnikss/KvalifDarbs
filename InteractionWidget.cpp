@@ -11,7 +11,7 @@ void UInteractionWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	InteractionProgressBar->PercentDelegate.BindUFunction(this, "UpdateInteractionProgress");
+	
 }
 
 void UInteractionWidget::NativeConstruct()
@@ -29,7 +29,7 @@ void UInteractionWidget::UpdateWidget(const FInteractableData* InteractableData)
 	{
 	case EInteractableType::Pickup:
 		KeyPressText->SetText(FText::FromString("Press"));
-		InteractionProgressBar->SetVisibility(ESlateVisibility::Collapsed);
+		
 		
 
 		if (InteractableData->Quantity < 2)

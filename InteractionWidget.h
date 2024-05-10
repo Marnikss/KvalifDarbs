@@ -36,9 +36,6 @@ protected:
 	UTextBlock* KeyPressText;
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget), Category = "Interaction Widget | Interactable Data")
-	UProgressBar* InteractionProgressBar;
-
-	UPROPERTY(VisibleAnywhere, meta = (BindWidget), Category = "Interaction Widget | Interactable Data")
 	float CurrentInteractionDuration;
 
 	UFUNCTION(Category = "Interaction Widget | Interactable Data")

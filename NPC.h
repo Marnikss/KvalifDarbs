@@ -5,10 +5,19 @@
 #include "CoreMinimal.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "GameFramework/Character.h"
+#include "PatrolPath.h"
+#include "CombatInterface.h"
+#include "Animation/AnimMontage.h"
+#include "CilveksBase.h"
+#include "World/Pickup.h"
 #include "NPC.generated.h"
 
+class APickup;
+class UItemBase;
+
+
 UCLASS()
-class SPEELE_API ANPC : public ACharacter
+class SPEELE_API ANPC : public ACilveksBase, public ICombatInterface
 {
 	GENERATED_BODY()
 
@@ -24,10 +33,37 @@ public:
 
 	UBehaviorTree* GetBehaviorTree() const;
 
+	APatrolPath* GetPatrolPath() const;
+
+	UAnimMontage* GetMontage() const;
+
+	int MeleeAttack_Implementation() override;
+
+	void DeathSequence();
+
+	UAnimMontage* GetDeathMontage() const;
+
+	float GetHealth() const;
+
+	float GetMaxHealth() const;
+
+	void SetHealth(float const NewHealth);
+
+	void LootSpawn(UItemBase* ItemBase);
+
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+private:
+	UPROPERTY()
+	UBlueprint* BP_PickupBase;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI", meta=(AllowPrivateAccess="true"))
 	UBehaviorTree* Tree;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
+	APatrolPath* PatrolPath;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation, meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* Montage;
 };
