@@ -1,29 +1,29 @@
-#pragma once
+﻿#pragma once // domāts lai novērstu liekas atsauces citos failos
 
-#include "CoreMinimal.h"
-#include "GameFramework/SaveGame.h"
-#include "SpeeleSaveGame.generated.h"
+#include "CoreMinimal.h" // nodrošina, ka ir iekļauta tikai minimālā pamata funkcionalitāte, kas var palīdzēt samazināt kompilācijas laiku
+#include "GameFramework/SaveGame.h" // Engine faila atsauce kas atbild par spēlētāja kustības funkcijām
+#include "SpeeleSaveGame.generated.h" // ietver generetu C++ kodu kas nodrosina mijiedarbibu ar blueprintiem uc
 
-USTRUCT(BlueprintType)
-struct FInventoryItem
+USTRUCT(BlueprintType) // struktūra ir redzama un pieejama Blueprint klases skriptos
+struct FInventoryItem // Definē struktūru
 {
-    GENERATED_BODY()
+    GENERATED_BODY() // pievieno nepieciešamās funkcijas un īpašības, lai padarītu šo struktūru derīgu
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString ItemName;
+    FString ItemName; // Fstring formāta mainīgais kas saturēs priekšmeta nosaukumu
 };
 
-UCLASS()
-class SPEELE_API USpeeleSaveGame : public USaveGame
+UCLASS() // norāda, ka šī klase ir Unreal Engine klase
+class SPEELE_API USpeeleSaveGame : public USaveGame // izveidotā klase manto Unreal Engine spēļu saglabāšanas pamatklasi
 {
-    GENERATED_BODY()
+    GENERATED_BODY() // pievieno nepieciešamās funkcijas un īpašības, lai padarītu šo struktūru derīgu
 
 public:
-    USpeeleSaveGame();
+    USpeeleSaveGame(); // konstruktors
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    FVector PlayerPosition;
+    FVector PlayerPosition; // vektora mainīgais, kas glabās spēlētāja pozīciju
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    TArray<FInventoryItem> Inventory;
+    TArray<FInventoryItem> Inventory; // masīva mainīgais kas saturēs Inventory satura info
 };
